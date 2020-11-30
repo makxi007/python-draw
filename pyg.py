@@ -9,7 +9,6 @@ from PIL import Image
 
 pygame.init()
 
-
 background_color = "black"
 
 # Task to do simple draw app (which will draw by lines)
@@ -18,8 +17,10 @@ background_color = "black"
 # 	Add change color that draw +
 #	Add keep the same main game after menu launch +
 #	Add change size of the brush +
-# 	Add Screenshot save
-# 	Add Gif save
+# 	Add Screenshot save +
+# 	Add Gif save +
+#	Add lambda function to the code (if you can)
+#	Add list comprehenssions to the code (if you can)
 	
 
 class Game_Events:
@@ -54,14 +55,14 @@ class Game_Events:
 			if (click[0] == 1 and action != None):
 				action()
 
-		font_text = pygame.font.SysFont("Arial", 30)
-		text_surface, text_rect = self.text_object("Color", font_text)
+		font_text = pygame.font.SysFont("Arial", 25)
+		text_surface, text_rect = self.text_object(msg, font_text)
 		text_rect.center = ((pos[0]+(size[0]/2)), (pos[1]+(size[1]/2)))
 		win.blit(text_surface, text_rect)
 
-	def size_surface(self, win, txt, pos, size, color):
+	def text_on_surface(self, win, txt, text_size, pos, size, color):
 		pygame.draw.rect(win, color, (pos[0], pos[1], size[0],size[1]))
-		font_text = pygame.font.SysFont("Arial", 30)
+		font_text = pygame.font.SysFont("Arial", text_size)
 		text_surface, text_rect = self.text_object(txt, font_text)
 		text_rect.center = ((pos[0]+(size[0]/2)), (pos[1]+(size[1]/2)))
 		win.blit(text_surface, text_rect)
@@ -73,6 +74,7 @@ class Game_States:
 	def __init__(self, window):
 		self.window = window
 
+	#When in a pause state
 	def pause_state(self, surface):
 		global brush_size
 		pause = True
@@ -82,37 +84,59 @@ class Game_States:
 				if (event.type == pygame.QUIT):
 					pause = False
 					break
+				
+				keys = pygame.key.get_pressed()				
+				#Key to change background
+				if (keys[pygame.K_w]):
+					if (background_color == "black"):
+						self.window.fill(BLACK)
+					if (background_color == "white"):
+					 	self.window.fill(WHITE)
+					self.window.blit(surface, (0,0))
+					pause = False
 
-				keys = pygame.key.get_pressed()
+				if (keys[pygame.K_KP_PLUS]):
+					self.increment()
+				if (keys[pygame.K_KP_MINUS]):
+					self.decrement()
+	
 
+				#Settings title
+				self.game_events.text_on_surface(self.window,"Setting",40,(WIDTH/2-75, 70),(150,50),DARK_PURPLE)
+
+				#Brush size buttons and text
 				self.game_events.button(self.window,"+",(WIDTH/2-100,HEIGHT/2-200),(50,50),(PURPLE, DARK_PURPLE), self.increment)
-				self.game_events.size_surface(self.window,str(brush_size),(WIDTH/2-200,HEIGHT/2-200),(50,50),ORANGE)
+				self.game_events.text_on_surface(self.window,str(brush_size),30,(WIDTH/2-200,HEIGHT/2-200),(50,50),ORANGE)
 				self.game_events.button(self.window,"-",(WIDTH/2-300,HEIGHT/2-200),(50, 50),(DARK_GREEN,GREEN), self.decrement)
 
-				self.game_events.button_change_color(self.window, "Click", (WIDTH/2, HEIGHT/2), (100,100), (DARK_RED), self.change_color)
-				if (keys[pygame.K_w]):
-					# if (background_color == "black"):
-					# 	self.window.fill(BLACK)
-					# if (background_color == "white"):
-					# 	self.window.fill(WHITE)
-					self.window.blit(surface, (0,0))
-					pause = False	
+				#Change color	
+				self.game_events.text_on_surface(self.window, "Click below", 20, (WIDTH/2+100, HEIGHT/2-270), (100,50), (ORANGE))
+				self.game_events.button_change_color(self.window, "COLOR", (WIDTH/2+100, HEIGHT/2-200), (100,100), (WHITE), self.change_color)
 					
-
 			clock.tick(30)
 			pygame.display.update()
 	
+	#Increment brush size
 	def increment(self):
 		global brush_size
-		brush_size += 1
+		# if (brush_size >= 100):
+		# 	brush_size = 100
+		# else:
+		# 	brush_size += 1
+		brush_size = (100 if brush_size>=100 else (brush_size+1))
+		print(brush_size)
+		
 
+	#Decrement brush size
 	def decrement(self):
 		global brush_size
-		if (brush_size <= 1):
-			brush_size = 1
-		else:
-			brush_size -= 1
+		# if (brush_size <= 1):
+		# 	brush_size = 1
+		# else:
+		# 	brush_size -= 1
+		brush_size = (1 if brush_size <= 1 else brush_size-1)
 
+	#Change color
 	def change_color(self):
 		global current_color, count
 		if (count == len(COLORS)-1):
@@ -192,9 +216,6 @@ def main():
 			window.fill(BLACK)
 			background_color = "black"
 
-		if (keys[pygame.K_c]):
-			window.fill(BLACK)
-
 		#Make a screenshot
 		if (keys[pygame.K_s]):
 			do_screenshot(window, c)
@@ -203,8 +224,6 @@ def main():
 		#Save to the gif
 		if (keys[pygame.K_g]):
 			make_gif()
-
-		
 
 		drawing(window, brush_size)
 	
