@@ -6,7 +6,7 @@ also it allows to change color and brush size
 1) Clone this repository with: 
 git clone
 2) Run python script
-python3 'script_name.py'
+python3 pyg.py
 
 ## How to save images
 Press 's'
